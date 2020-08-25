@@ -39,9 +39,13 @@ public class JdbcTemplateShareDaoImpl implements ShareDao {
     }
 
     private int getMaxId() {
-        String SQL = "SELECT MAX(id) FROM SHARE_TABLE";
-        int maxId = jdbcTemplate.queryForObject(SQL, int.class);
-        return maxId;
+        try {
+            String SQL = "SELECT MAX(id) FROM SHARE_TABLE";
+            int maxId = jdbcTemplate.queryForObject(SQL, int.class);
+            return maxId;
+        } catch (Exception ex) {
+            return 0;
+        }
     }
 
     @Override
