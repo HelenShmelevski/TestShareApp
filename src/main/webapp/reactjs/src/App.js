@@ -20,8 +20,7 @@ import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
 import axios from 'axios'
 import Alert from '@material-ui/lab/Alert';
-
-import {Line} from 'react-chartjs-2';
+import {CanvasJSChart} from 'canvasjs-react-charts'
 
 const api = axios.create({
     baseURL: `http://localhost:8080`
@@ -72,7 +71,7 @@ function App() {
     let columns = [
         {title: "id", field: "id", hidden: true},
         {title: "Дата", field: "date", placeholder: 'Введите дату в формате гггг-мм-дд'},
-        {title: "Компания", field: "company", placeholder: 'Введите название компании' },
+        {title: "Компания", field: "company", placeholder: 'Введите название компании'},
         {title: "Цена", field: "cost", placeholder: 'Введите сумму'}
     ];
     const [data, setData] = useState([]); //table data
@@ -81,44 +80,58 @@ function App() {
     const [iserror, setIserror] = useState(false);
     const [errorMessages, setErrorMessages] = useState([]);
     const [chart, setChart] = useState({
-        labels: [],
-        datasets: []
+        theme: "light2",
+        title: {
+            text: "Цены на акции"
+        },
+        axisX: {
+            title: "Дата покупки",
+            valueFormatString: "DD MM YYYY"
+        },
+        axisY: {
+            title: "Стоимость"
+        },
+        data: []
     });
 
     const loadData = () => {
         api.get("/get")
             .then(res => {
-                setData(res.data)
-                const sortedData = res.data.sort((a, b) => new Date(a.date) - new Date(b.date))
+                setData(res.data);
+                const sortedData = res.data.sort((a, b) => new Date(a.date) - new Date(b.date));
                 let group_data = {};
-                let groupKey = [...new Set(res.data.map(o=>o.company))];
+                let groupKey = [...new Set(res.data.map(o => o.company))];
                 res.data.forEach((row) => {
-                    if ( group_data[row.company]) {
+                    if (group_data[row.company]) {
                         group_data[row.company].push(row);
                     } else {
                         group_data[row.company] = [row];
                     }
                 });
-                let datasets = []
-                groupKey.forEach((company, index) => {
-                    datasets.push({
-                        label: company,
-                        fill: false,
-                        lineTension: 0.5,
-                        backgroundColor: 'rgba(10,10,10,1)',
-                        borderColor: COLORS[index],
-                        borderWidth: 2,
-                        // Данные по оси Y Цены
-                        data: group_data[company].map(o=>o.cost)
+                let newChart = Object.assign({}, chart);
+                let newData = [];
+                let newMinimum = Math.min(...sortedData.map(o => o.cost)) - 100;
+                let newMaximum = Math.max(...sortedData.map(o => o.cost)) + 100;
+                groupKey.forEach(company => {
+                    newData.push({
+                        type: "spline",
+                        xValueFormatString: "DD MM YYYY",
+                        name: company,
+                        showInLegend: true,
+                        dataPoints: group_data[company].map(o => {
+                            return {x: new Date(o.date), y: o.cost}
+                        })
                     });
 
                 });
-                setChart({labels: [...new Set(sortedData.map(o => o.date))], datasets: datasets})
-
+                newChart.data = newData;
+                newChart.axisY.minimum = newMinimum;
+                newChart.axisY.maximum = newMaximum;
+                setChart(newChart)
             })
             .catch(error => {
             })
-    }
+    };
 
 
     const validPeriod = (start, end, dateString) => {
@@ -126,19 +139,19 @@ function App() {
             return true;
         } else
             return false
-    }
+    };
 
     const isValidDate = (dateString) => {
         let start = new Date("1556-01-01");
         let end = new Date();
         let regEx = /^\d{4}-\d{2}-\d{2}$/;
-        if(!dateString.match(regEx)) return false;  // Invalid format
+        if (!dateString.match(regEx)) return false;  // Invalid format
         let toDate = new Date(dateString);
-        if (!validPeriod(start,end,toDate)) return false;
+        if (!validPeriod(start, end, toDate)) return false;
         let dNum = toDate.getTime();
-        if(!dNum && dNum !== 0) return false; // NaN value, Invalid date
-        return toDate.toISOString().slice(0,10) === dateString;
-    }
+        if (!dNum && dNum !== 0) return false; // NaN value, Invalid date
+        return toDate.toISOString().slice(0, 10) === dateString;
+    };
 
     useEffect(() => {
         loadData();
@@ -191,7 +204,7 @@ function App() {
         if (newData.company === undefined) {
             errorList.push("Ошибка! Отсутствует название компании. Попробуйте еще раз")
         }
-        if (newData.cost === undefined  || isNaN(newData.cost) || newData.cost <= 0) {
+        if (newData.cost === undefined || isNaN(newData.cost) || newData.cost <= 0) {
             errorList.push("Ошибка! Не верное значение цены. Попробуйте еще раз")
         }
 
@@ -242,23 +255,8 @@ function App() {
             <Grid container spacing={1}>
                 <Grid item xs={6}>
                     <div>
-                        {chart.datasets.length !== 0 &&
-                            <Line
-                                data={chart}
-                                options={{
-                                    title:{
-                                        display:true,
-                                        text:'График зависимости цен на акции от даты транзакции',
-                                        fontSize:20
-                                    },
-                                    legend:{
-                                        display:true,
-                                        position:'right'
-                                    }
-                                }}
-                            />
-                        }
-                </div>
+                        <CanvasJSChart options={chart}/>
+                    </div>
                 </Grid>
                 <Grid item xs={6}>
                     <div>
