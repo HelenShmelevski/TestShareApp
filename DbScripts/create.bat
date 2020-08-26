@@ -1,0 +1,1 @@
+java -cp lib/h2-1.4.200.jar org.h2.tools.RunScript -user sa -password 123 -url jdbc:h2:~/share-db;DB_CLOSE_ON_EXIT=TRUE;FILE_LOCK=NO -script sql/Initialize.sql
