@@ -16,13 +16,10 @@ import FirstPage from '@material-ui/icons/FirstPage';
 import LastPage from '@material-ui/icons/LastPage';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
-import axios from 'axios'
 import Alert from '@material-ui/lab/Alert';
-import {CanvasJSChart} from 'canvasjs-react-charts'
-
-const api = axios.create({
-    baseURL: `http://localhost:8080`
-});
+import {CanvasJSChart} from 'canvasjs-react-charts';
+import {ShareApiProvider} from './ShareApiProvider';
+import axios from "axios";
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref}/>),
@@ -44,13 +41,13 @@ const tableIcons = {
 
 function App() {
 
-    let columns = [
+    const columns = [
         {title: "id", field: "id", hidden: true},
         {title: "Дата", field: "date", type: 'date'},
         {title: "Компания", field: "company"},
         {title: "Цена", field: "cost", type: 'numeric'}
     ];
-
+    const shareProvider = new ShareApiProvider();
     const [data, setData] = useState([]); //table data
     const [iserror, setIserror] = useState(false);
     const [errorMessages, setErrorMessages] = useState([]);
@@ -70,39 +67,10 @@ function App() {
     });
 
     const loadData = () => {
-        api.get("/get")
+        shareProvider.get()
             .then(res => {
                 setData(res.data);
-                const sortedData = res.data.sort((a, b) => new Date(a.date) - new Date(b.date));
-                let group_data = {};
-                let groupKey = [...new Set(res.data.map(o => o.company))];
-                res.data.forEach((row) => {
-                    if (group_data[row.company]) {
-                        group_data[row.company].push(row);
-                    } else {
-                        group_data[row.company] = [row];
-                    }
-                });
-                let newChart = Object.assign({}, chart);
-                let newData = [];
-                let newMinimum = Math.min(...sortedData.map(o => o.cost)) - 100;
-                let newMaximum = Math.max(...sortedData.map(o => o.cost)) + 100;
-                groupKey.forEach(company => {
-                    newData.push({
-                        type: "spline",
-                        xValueFormatString: "DD MM YYYY",
-                        name: company,
-                        showInLegend: true,
-                        dataPoints: group_data[company].map(o => {
-                            return {x: new Date(o.date), y: o.cost}
-                        })
-                    });
-
-                });
-                newChart.data = newData;
-                newChart.axisY.minimum = newMinimum;
-                newChart.axisY.maximum = newMaximum;
-                setChart(newChart)
+                drawChart(res.data);
             })
             .catch(error => {
                 setErrorMessages(["Ошибка загрузки данных!"]);
@@ -110,6 +78,38 @@ function App() {
             })
     };
 
+const drawChart =(data) =>{
+    const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    let group_data = {};
+    let groupKey = [...new Set(data.map(o => o.company))];
+    data.forEach((row) => {
+        if (group_data[row.company]) {
+            group_data[row.company].push(row);
+        } else {
+            group_data[row.company] = [row];
+        }
+    });
+    let newChart = Object.assign({}, chart);
+    let chartData = [];
+    let minY = Math.min(...sortedData.map(o => o.cost)) - 300;
+    let maxY = Math.max(...sortedData.map(o => o.cost)) + 300;
+    groupKey.forEach(company => {
+        chartData.push({
+            type: "spline",
+            xValueFormatString: "DD MM YYYY",
+            name: company,
+            showInLegend: true,
+            dataPoints: group_data[company].map(o => {
+                return {x: new Date(o.date), y: o.cost}
+            })
+        });
+
+    });
+    newChart.data = chartData;
+    newChart.axisY.minimum = minY;
+    newChart.axisY.maximum = maxY;
+    setChart(newChart)
+}
 
     const validPeriod = (start, end, dateString) => {
         return start <= dateString && dateString <= end;
@@ -139,15 +139,11 @@ function App() {
 
     const handleRowUpdate = (newData, oldData, resolve) => {
         let errorList = validateData(newData);
-
-        if (errorList.length < 1) {
-            api.patch("/update/" + newData.id, newData)
+        if (errorList.length === 0) {
+            shareProvider.update(newData)
                 .then(res => {
-                    const dataUpdate = [...data];
-                    const index = oldData.tableData.id;
-                    dataUpdate[index] = newData;
-                    setData([...dataUpdate]);
                     loadData();
+                    // TODO: Понять для чего нужен вызов данной функции
                     resolve();
                     setIserror(false);
                     setErrorMessages([])
@@ -155,26 +151,25 @@ function App() {
                 .catch(error => {
                     setErrorMessages(["Ошибка обновления!"]);
                     setIserror(true);
+                    // TODO: Понять для чего нужен вызов данной функции
                     resolve()
 
                 })
         } else {
             setErrorMessages(errorList);
             setIserror(true);
+            // TODO: Понять для чего нужен вызов данной функции
             resolve()
         }
     };
 
     const handleRowAdd = (newData, resolve) => {
         let errorList = validateData(newData);
-
-        if (errorList.length < 1) { //no error
-            api.post("/create", newData)
+        if (errorList.length === 0) {
+            shareProvider.create(newData)
                 .then(res => {
-                    let dataToAdd = [...data];
-                    dataToAdd.push(newData);
-                    setData(dataToAdd);
                     loadData();
+                    // TODO: Понять для чего нужен вызов данной функции
                     resolve();
                     setErrorMessages([]);
                     setIserror(false)
@@ -182,28 +177,28 @@ function App() {
                 .catch(error => {
                     setErrorMessages(["Ошибка создания новой транзакции!"]);
                     setIserror(true);
-                    // resolve()
+                    // TODO: Понять для чего нужен вызов данной функции
+                    resolve()
                 })
         } else {
             setErrorMessages(errorList);
             setIserror(true);
+            // TODO: Понять для чего нужен вызов данной функции
             resolve()
         }
     };
 
     const handleRowDelete = (oldData, resolve) => {
-        api.delete("/delete/" + oldData.id)
+        shareProvider.delete(oldData)
             .then(res => {
-                const dataDelete = [...data];
-                const index = oldData.tableData.id;
-                dataDelete.splice(index, 1);
-                setData([...dataDelete]);
                 loadData();
+                // TODO: Понять для чего нужен вызов данной функции
                 resolve()
             })
             .catch(error => {
                 setErrorMessages(["Не удалось удалить транзакцию"]);
                 setIserror(true);
+                // TODO: Понять для чего нужен вызов данной функции
                 resolve()
             })
     };

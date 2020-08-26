@@ -5,16 +5,26 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Класс обрабатывающий отдельно каждую запись полученную из БД
+ * и возврацает экземпляр сущности: Акция
+ */
 public class ShareMapper implements RowMapper{
-
+    /**
+     * Формирование экземпляра сущности: Акция
+     * @param rs
+     * @param rowNum
+     * @return
+     * @throws SQLException
+     */
         @Override
         public Share mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Share developer = new Share();
-            developer.setId(rs.getInt("id"));
-            developer.setDate(rs.getDate("date"));
-            developer.setCompany(rs.getString("company"));
-            developer.setCost(rs.getDouble("cost"));
-            return developer;
+            Share share = new Share();
+            share.setId(rs.getInt("id"));
+            share.setDate(rs.getDate("date"));
+            share.setCompany(rs.getString("company"));
+            share.setCost(rs.getDouble("cost"));
+            return share;
         }
 }
 

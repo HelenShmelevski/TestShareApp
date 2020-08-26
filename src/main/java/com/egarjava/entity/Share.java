@@ -5,21 +5,35 @@ import java.util.Date;
 
 @Entity
 @Table(name = "share_table")
+/**
+ * Класс сущности: Акция
+ */
 public class Share {
 
+    /**
+     *  Уникальный идентификатор
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /**
+     * Дата совершения покупки
+     */
     @Column
     private Date date;
 
+    /**
+     * Наименование компании
+     */
     @Column
     private String company;
 
+    /**
+     *  Стоимость пакета акций
+     */
     @Column
     private Double cost;
-
 
     public Integer getId() {
         return id;

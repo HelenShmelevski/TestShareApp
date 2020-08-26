@@ -5,30 +5,22 @@ import com.egarjava.entity.Share;
 import com.egarjava.jdbc.ShareDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+
 
 @Service
 public class ShareServiceImpl implements ShareService {
-
-
     private final ShareDao shareDao;
 
     @Autowired
     public ShareServiceImpl(ShareDao shareDao) {
         this.shareDao = shareDao;
-
     }
 
     @Override
     public List<Share> getShareList() {
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd", Locale.ENGLISH);
         return shareDao.listShares();
-
     }
 
     @Override

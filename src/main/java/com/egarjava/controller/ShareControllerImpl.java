@@ -8,35 +8,34 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/share")
 @CrossOrigin("*")
-public class ShareControllerImpl implements ShareController {
-
-    private final ShareService someService;
+public class ShareControllerImpl{
+    private final ShareService shareService;
 
     @Autowired
     public ShareControllerImpl(ShareService shareService) {
-        this.someService = shareService;
+        this.shareService = shareService;
     }
 
     @GetMapping("/get")
     public List<Share> get() {
-        List<Share> t = someService.getShareList();
-        return t;
+        return shareService.getShareList();
     }
 
     @PatchMapping("/update/{id}")
     public void update(@PathVariable int id, @RequestBody Share newShare) {
-        someService.updateShare(id, newShare);
+        shareService.updateShare(id, newShare);
     }
 
     @PostMapping("/create")
     public void createShare(@RequestBody Share newShare){
-        someService.createShare(newShare.getDate(),newShare.getCompany(),newShare.getCost());
+        shareService.createShare(newShare.getDate(),newShare.getCompany(),newShare.getCost());
     }
 
     @DeleteMapping("/delete/{id}")
     public void deleteShare(@PathVariable int id){
-        someService.deleteShare(id);
+        shareService.deleteShare(id);
     }
 
 }

@@ -1,3 +1,4 @@
+// TODO: Понять для чего нужен, если ненужен удалить
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
