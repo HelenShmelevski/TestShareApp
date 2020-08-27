@@ -19,7 +19,7 @@ import ViewColumn from '@material-ui/icons/ViewColumn';
 import Alert from '@material-ui/lab/Alert';
 import {CanvasJSChart} from 'canvasjs-react-charts';
 import {ShareApiProvider} from './ShareApiProvider';
-import axios from "axios";
+
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref}/>),
