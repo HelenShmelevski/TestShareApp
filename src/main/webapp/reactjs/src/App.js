@@ -143,7 +143,6 @@ const drawChart =(data) =>{
             shareProvider.update(newData)
                 .then(res => {
                     loadData();
-                    // TODO: Понять для чего нужен вызов данной функции
                     resolve();
                     setIserror(false);
                     setErrorMessages([])
@@ -151,14 +150,12 @@ const drawChart =(data) =>{
                 .catch(error => {
                     setErrorMessages(["Ошибка обновления!"]);
                     setIserror(true);
-                    // TODO: Понять для чего нужен вызов данной функции
                     resolve()
 
                 })
         } else {
             setErrorMessages(errorList);
             setIserror(true);
-            // TODO: Понять для чего нужен вызов данной функции
             resolve()
         }
     };
@@ -169,7 +166,6 @@ const drawChart =(data) =>{
             shareProvider.create(newData)
                 .then(res => {
                     loadData();
-                    // TODO: Понять для чего нужен вызов данной функции
                     resolve();
                     setErrorMessages([]);
                     setIserror(false)
@@ -177,13 +173,11 @@ const drawChart =(data) =>{
                 .catch(error => {
                     setErrorMessages(["Ошибка создания новой транзакции!"]);
                     setIserror(true);
-                    // TODO: Понять для чего нужен вызов данной функции
                     resolve()
                 })
         } else {
             setErrorMessages(errorList);
             setIserror(true);
-            // TODO: Понять для чего нужен вызов данной функции
             resolve()
         }
     };
@@ -192,13 +186,11 @@ const drawChart =(data) =>{
         shareProvider.delete(oldData)
             .then(res => {
                 loadData();
-                // TODO: Понять для чего нужен вызов данной функции
                 resolve()
             })
             .catch(error => {
                 setErrorMessages(["Не удалось удалить транзакцию"]);
                 setIserror(true);
-                // TODO: Понять для чего нужен вызов данной функции
                 resolve()
             })
     };
